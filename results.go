@@ -29,7 +29,6 @@ func (r ErrorResult) Apply(req *Request, resp *Response) {
 	if status == 0 {
 		status = http.StatusInternalServerError
 	}
-
 	contentType := ContentTypeByFilename("xxx." + format)
 	if contentType == DefaultFileContentType {
 		contentType = "text/plain"
@@ -96,7 +95,11 @@ type PlaintextErrorResult struct {
 
 // This method is used when the template loader or error template is not available.
 func (r PlaintextErrorResult) Apply(req *Request, resp *Response) {
-	resp.WriteHeader(http.StatusInternalServerError, "text/plain")
+	status := resp.Status
+	if status == 0 {
+		status = http.StatusInternalServerError
+	}
+	resp.WriteHeader(status, "text/plain")
 	resp.Out.Write([]byte(r.Error()))
 }
 
@@ -127,7 +130,11 @@ func (r *RenderTemplateResult) Apply(req *Request, resp *Response) {
 		return
 	}
 
-	resp.WriteHeader(http.StatusOK, "text/html")
+	status := resp.Status
+	if status == 0 {
+		status = http.StatusOK
+	}
+	resp.WriteHeader(status, "text/html")
 	b.WriteTo(resp.Out)
 }
 
@@ -149,7 +156,11 @@ func (r RenderJsonResult) Apply(req *Request, resp *Response) {
 		return
 	}
 
-	resp.WriteHeader(http.StatusOK, "application/json")
+	status := resp.Status
+	if status == 0 {
+		status = http.StatusOK
+	}
+	resp.WriteHeader(status, "application/json")
 	resp.Out.Write(b)
 }
 
@@ -172,7 +183,11 @@ func (r RenderXmlResult) Apply(req *Request, resp *Response) {
 		return
 	}
 
-	resp.WriteHeader(http.StatusOK, "application/xml")
+	status := resp.Status
+	if status == 0 {
+		status = http.StatusOK
+	}
+	resp.WriteHeader(status, "application/xml")
 	resp.Out.Write(b)
 }
 
@@ -181,7 +196,11 @@ type RenderTextResult struct {
 }
 
 func (r RenderTextResult) Apply(req *Request, resp *Response) {
-	resp.WriteHeader(http.StatusOK, "text/plain")
+	status := resp.Status
+	if status == 0 {
+		status = http.StatusOK
+	}
+	resp.WriteHeader(status, "text/plain")
 	resp.Out.Write([]byte(r.text))
 }
 
@@ -209,7 +228,11 @@ func (r *BinaryResult) Apply(req *Request, resp *Response) {
 	if r.Length != -1 {
 		resp.Out.Header().Set("Content-Length", fmt.Sprintf("%d", r.Length))
 	}
-	resp.WriteHeader(http.StatusOK, ContentTypeByFilename(r.Name))
+	status := resp.Status
+	if status == 0 {
+		status = http.StatusOK
+	}
+	resp.WriteHeader(status, ContentTypeByFilename(r.Name))
 	io.Copy(resp.Out, r.Reader)
 }
 
@@ -219,7 +242,11 @@ type RedirectToUrlResult struct {
 
 func (r *RedirectToUrlResult) Apply(req *Request, resp *Response) {
 	resp.Out.Header().Set("Location", r.url)
-	resp.WriteHeader(http.StatusFound, "")
+	status := resp.Status
+	if status == 0 {
+		status = http.StatusFound
+	}
+	resp.WriteHeader(status, "")
 }
 
 type RedirectToActionResult struct {
@@ -234,7 +261,11 @@ func (r *RedirectToActionResult) Apply(req *Request, resp *Response) {
 		return
 	}
 	resp.Out.Header().Set("Location", url)
-	resp.WriteHeader(http.StatusFound, "")
+	status := resp.Status
+	if status == 0 {
+		status = http.StatusFound
+	}
+	resp.WriteHeader(status, "")
 }
 
 func getRedirectUrl(item interface{}) (string, error) {
